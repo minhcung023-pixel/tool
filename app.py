@@ -4,10 +4,13 @@ import cloudscraper
 from bs4 import BeautifulSoup
 import sqlite3
 import random
+import urllib3
+
+# Tắt cảnh báo rác
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 app = Flask(__name__)
 
-# List proxy free (sống dở chết dở, có fallback)
 PROXY_LIST = [
     "http://103.152.112.162:80",
     "http://47.91.65.23:3128",
@@ -111,18 +114,21 @@ def bypass_logic(url):
     )
 
     try:
-        r = scraper.get(url, timeout=10, proxies=proxies)
+        # THÊM verify=False ĐỂ LÁCH LỖI SSL
+        r = scraper.get(url, timeout=10, proxies=proxies, verify=False)
+        
         if r.status_code in [403, 502, 503, 504]:
             proxies = {}
             proxy_used = "Direct IP (Fallback)"
-            r = scraper.get(url, timeout=15)
+            r = scraper.get(url, timeout=15, verify=False)
+            
     except Exception as e:
         try:
             proxies = {}
             proxy_used = "Direct IP (Fallback)"
-            r = scraper.get(url, timeout=15)
+            r = scraper.get(url, timeout=15, verify=False)
         except Exception as e2:
-            return None, f"Lỗi mạng (Cả proxy và direct đều chết): {str(e2)}"
+            return None, f"Lỗi mạng: {str(e2)}"
 
     if r.status_code != 200:
         return None, f"Bị chặn (Status: {r.status_code}) qua {proxy_used}"
@@ -155,9 +161,9 @@ def bypass_logic(url):
         if name: payload[name] = inp.get("value", "")
 
     try:
-        resp = scraper.post(action, data=payload, timeout=15, allow_redirects=False, proxies=proxies)
+        resp = scraper.post(action, data=payload, timeout=15, allow_redirects=False, proxies=proxies, verify=False)
         if resp.status_code in [403, 502, 503, 504] and proxies:
-             resp = scraper.post(action, data=payload, timeout=15, allow_redirects=False)
+             resp = scraper.post(action, data=payload, timeout=15, allow_redirects=False, verify=False)
     except:
         return None, "Lỗi gửi POST."
 
