@@ -3,21 +3,12 @@ import re
 import cloudscraper
 from bs4 import BeautifulSoup
 import sqlite3
-import random
 import urllib3
 
 # Tắt cảnh báo rác
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 app = Flask(__name__)
-
-PROXY_LIST = [
-    "http://103.152.112.162:80",
-    "http://47.91.65.23:3128",
-    "http://8.219.97.248:80",
-    "http://20.111.54.16:80",
-    "http://103.155.54.122:80"
-]
 
 HTML_PAGE = """
 <!DOCTYPE html>
@@ -48,7 +39,7 @@ HTML_PAGE = """
 <body>
     <div class="container">
         <div class="logo">Minh Tool</div>
-        <div class="subtitle">Multi Bypass + Proxy</div>
+        <div class="subtitle">Multi Bypass</div>
         <div class="traffic">🔥 Tổng lượt vượt: {{ traffic }}</div>
         
         <form method="POST" action="/">
@@ -101,37 +92,18 @@ def add_traffic():
         pass
 
 def bypass_logic(url):
-    proxies = {}
-    proxy_used = "Direct IP (Render)"
-    
-    if PROXY_LIST:
-        chosen_proxy = random.choice(PROXY_LIST)
-        proxies = {"http": chosen_proxy, "https": chosen_proxy}
-        proxy_used = chosen_proxy
-
+    # Bỏ proxy, xài IP direct của Render
     scraper = cloudscraper.create_scraper(
         browser={'browser': 'chrome', 'platform': 'windows', 'desktop': True}
     )
 
     try:
-        # THÊM verify=False ĐỂ LÁCH LỖI SSL
-        r = scraper.get(url, timeout=10, proxies=proxies, verify=False)
-        
-        if r.status_code in [403, 502, 503, 504]:
-            proxies = {}
-            proxy_used = "Direct IP (Fallback)"
-            r = scraper.get(url, timeout=15, verify=False)
-            
+        r = scraper.get(url, timeout=20, verify=False)
     except Exception as e:
-        try:
-            proxies = {}
-            proxy_used = "Direct IP (Fallback)"
-            r = scraper.get(url, timeout=15, verify=False)
-        except Exception as e2:
-            return None, f"Lỗi mạng: {str(e2)}"
+        return None, f"Lỗi mạng: {str(e)}"
 
     if r.status_code != 200:
-        return None, f"Bị chặn (Status: {r.status_code}) qua {proxy_used}"
+        return None, f"Bị chặn (Status: {r.status_code})"
 
     soup = BeautifulSoup(r.text, "html.parser")
     
@@ -148,7 +120,7 @@ def bypass_logic(url):
         meta = soup.find("meta", attrs={"http-equiv": re.compile("refresh", re.I)})
         if meta and "url=" in meta.get("content", "").lower():
             return meta["content"].split("url=")[-1].strip(" '\""), None
-        return None, "Không tìm thấy form token hay link ẩn."
+        return None, "Không tìm thấy form token hay link ẩn. (Có thể bị Cloudflare Turnstile)"
 
     action = form.get("action") or url
     if action.startswith("/"):
@@ -161,11 +133,9 @@ def bypass_logic(url):
         if name: payload[name] = inp.get("value", "")
 
     try:
-        resp = scraper.post(action, data=payload, timeout=15, allow_redirects=False, proxies=proxies, verify=False)
-        if resp.status_code in [403, 502, 503, 504] and proxies:
-             resp = scraper.post(action, data=payload, timeout=15, allow_redirects=False, verify=False)
-    except:
-        return None, "Lỗi gửi POST."
+        resp = scraper.post(action, data=payload, timeout=20, allow_redirects=False, verify=False)
+    except Exception as e:
+        return None, f"Lỗi gửi POST: {str(e)}"
 
     if resp.status_code in (301, 302, 303, 307, 308):
         return resp.headers.get("Location"), None
@@ -185,7 +155,7 @@ def bypass_logic(url):
         if not any(x in u for x in ["link4m", "link4.me", "layarkaca", "cloudflare", "google"]):
             return u, None
 
-    return None, "Đéo tìm thấy link đích."
+    return None, "Đéo tìm thấy link đích. (Có thể bị dính Captcha/Turnstile)"
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
