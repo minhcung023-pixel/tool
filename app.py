@@ -47,7 +47,8 @@ HTML_PAGE = """
         <div class="tabs">
             <div class="tab-btn active" onclick="setTab('link4m', this)">Link4M</div>
             <div class="tab-btn" onclick="setTab('link4me', this)">Link4.Me</div>
-            <div class="tab-btn" onclick="setTab('trafficvn', this)">Traffic.vn</div>
+            <div class="tab-btn" onclick="setTab('trafficio', this)">Traffic.io</div>
+            <div class="tab-btn" onclick="setTab('ontop', this)">OnTop.link</div>
             <div class="tab-btn" onclick="setTab('layarkaca', this)">LayarKaca</div>
             <div class="tab-btn" onclick="setTab('link1s', this)">Link1s</div>
             <div class="tab-btn" onclick="setTab('other', this)">Khác</div>
@@ -74,7 +75,8 @@ HTML_PAGE = """
         const placeholders = {
             'link4m': 'Dán link Link4M vào đây...',
             'link4me': 'Dán link Link4.Me vào đây...',
-            'trafficvn': 'Dán link Traffic.vn vào đây...',
+            'trafficio': 'Dán link Traffic.io vào đây...',
+            'ontop': 'Dán link OnTop.link vào đây...',
             'layarkaca': 'Dán link LayarKaca vào đây...',
             'link1s': 'Dán link Link1s vào đây...',
             'other': 'Dán link rút gọn bất kỳ...'
@@ -176,7 +178,7 @@ def bypass_logic(url):
 
     urls = re.findall(r'https?://[^\s"\'<>]+', resp.text)
     for u in urls:
-        if not any(x in u for x in ["link4m", "link4.me", "traffic.vn", "layarkaca", "cloudflare", "google"]):
+        if not any(x in u for x in ["link4m", "link4.me", "traffic.io", "ontop.link", "layarkaca", "cloudflare", "google"]):
             return u, None
 
     return None, "Đéo tìm thấy link đích. (Turnstile nó chặn rồi)"
