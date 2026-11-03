@@ -25,11 +25,9 @@ HTML_PAGE = """
         .logo { font-size: 32px; font-weight: 900; background: linear-gradient(90deg, #00e5ff, #ff007f); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -1px; margin-bottom: 5px; text-transform: uppercase; }
         .subtitle { color: #00e5ff; font-size: 12px; margin-bottom: 15px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; }
         .traffic { color: #ffeb3b; font-size: 12px; margin-bottom: 15px; font-weight: 700; text-transform: uppercase; }
-        
         .tabs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 20px; }
         .tab-btn { padding: 8px 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #aaa; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; }
         .tab-btn.active { background: linear-gradient(90deg, #ff007f, #7000ff); color: #fff; border-color: transparent; box-shadow: 0 0 10px rgba(255,0,127,0.4); }
-        
         input { width: 100%; padding: 16px; border-radius: 12px; border: 1px solid rgba(0, 229, 255, 0.3); background: rgba(0, 0, 0, 0.6); color: #fff; font-size: 15px; outline: none; transition: 0.2s; margin-bottom: 15px; }
         input:focus { border-color: #ff007f; box-shadow: 0 0 10px rgba(255, 0, 127, 0.3); }
         button[type="submit"] { width: 100%; padding: 16px; border-radius: 12px; border: none; background: linear-gradient(90deg, #ff007f, #7000ff); color: #fff; font-size: 16px; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: 0.2s; }
@@ -81,7 +79,6 @@ HTML_PAGE = """
             'link1s': 'Dán link Link1s vào đây...',
             'other': 'Dán link rút gọn bất kỳ...'
         };
-
         function setTab(tabName, btnElement) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             btnElement.classList.add('active');
@@ -125,7 +122,6 @@ def bypass_logic(url):
     scraper = cloudscraper.create_scraper(
         browser={'browser': 'chrome', 'platform': 'windows', 'desktop': True}
     )
-
     try:
         r = scraper.get(url, timeout=20)
     except Exception as e:
@@ -135,8 +131,6 @@ def bypass_logic(url):
         return None, f"Bị chặn (Status: {r.status_code})"
 
     soup = BeautifulSoup(r.text, "html.parser")
-    
-    # Tìm form cho link4m, link4.me, traffic.vn, v.v...
     form = soup.find("form", id="go-link") 
     if not form:
         for f in soup.find_all("form"):
